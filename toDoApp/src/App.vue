@@ -11,24 +11,27 @@
         </p>
       </div>
     </form>
-    <div v-for="cart in carts" :key="cart.id" class="card mb-5"
-    :class="{'has-background-success-light' : cart.done}"
+    <div
+      v-for="cart in carts"
+      :key="cart.id"
+      class="card mb-5"
+      :class="{ 'has-background-success-light': cart.done }"
     >
       <div class="card-content">
         <div class="content">
           <div class="columns is-mobile is-vcentered">
-            <div class="column"
-            :class="{'has-text-success line-through': cart.done}"
-            >{{ cart.content }}</div>
+            <div class="column" :class="{ 'has-text-success line-through': cart.done }">
+              {{ cart.content }}
+            </div>
             <div class="column is-5 has-text-right">
               <button
-              @click="toggleDonchik(cart.id)"
-              class="button is-light"
-              :class="cart.done ? 'is-success' : 'is-light'"
-              >&check;</button>
-              <button
-              @click="deleteNotion(cart.id)"
-              class="button">&#10060;</button>
+                @click="toggleDonchik(cart.id)"
+                class="button is-light"
+                :class="cart.done ? 'is-success' : 'is-light'"
+              >
+                &check;
+              </button>
+              <button @click="deleteNotion(cart.id)" class="button">&#10060;</button>
             </div>
           </div>
         </div>
@@ -40,32 +43,42 @@
 <script setup>
 //import
 import { ref, onMounted } from 'vue'
-import { db } from '@/firebase';
-import { collection, onSnapshot, addDoc, doc, deleteDoc, updateDoc } from "firebase/firestore";
+import { db } from '@/firebase'
+import {
+  collection,
+  onSnapshot,
+  addDoc,
+  doc,
+  deleteDoc,
+  updateDoc,
+  query,
+  orderBy
+} from 'firebase/firestore'
 
 //firebase ref
 
-const notionRef = collection(db, "todos")
+const notionRef = collection(db, 'todos');
+const notionOrder = query(notionRef, orderBy("date", "desc"));
 
 //todos
 
 const carts = ref([])
 
 // get todoshca
-onMounted(()=> {
-onSnapshot(notionRef, (querySnapshot) => {
-  const fbNotions = [];
-  querySnapshot.forEach((doc) => {
-    const notion = {
-    id: doc.id,
-    content: doc.data().content,
-    done:doc.data().done
-  };
-  fbNotions.push(notion);
-  });
-  carts.value = fbNotions;
-  console.log("Current cities in CA: ", fbNotions.join(", "));
-});
+onMounted(() => {
+  onSnapshot(notionOrder, (querySnapshot) => {
+    const fbNotions = []
+    querySnapshot.forEach((doc) => {
+      const notion = {
+        id: doc.id,
+        content: doc.data().content,
+        done: doc.data().done
+      }
+      fbNotions.push(notion)
+    })
+    carts.value = fbNotions
+    console.log('Current cities in CA: ', fbNotions.join(', '))
+  })
 })
 //add cart
 
@@ -73,24 +86,25 @@ const newCart = ref('')
 
 const addCart = () => {
   addDoc(notionRef, {
-  content: newCart.value,
-  done: false
-});
+    content: newCart.value,
+    done: false,
+    date: Date.now()
+  })
 
   newCart.value = ''
 }
 
 //delete notion
-const deleteNotion = (id)=>{
-  deleteDoc(doc(notionRef, id));
+const deleteNotion = (id) => {
+  deleteDoc(doc(notionRef, id))
 }
 
 //toggle
-const toggleDonchik = (id)=>{
+const toggleDonchik = (id) => {
   const index = carts.value.findIndex((cart) => cart.id == id)
   updateDoc(doc(notionRef, id), {
-  done: !carts.value[index].done
-});
+    done: !carts.value[index].done
+  })
 }
 </script>
 
@@ -101,7 +115,7 @@ const toggleDonchik = (id)=>{
   padding: 20px;
   margin: 0 auto;
 }
-.line-through{
+.line-through {
   text-decoration: line-through;
 }
 </style>
