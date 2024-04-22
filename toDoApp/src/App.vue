@@ -39,36 +39,58 @@
 
 <script setup>
 //import
-import { ref } from 'vue'
-import { v4 as uuidv4 } from 'uuid'
+import { ref, onMounted } from 'vue'
+import { db } from '@/firebase';
+import { collection, onSnapshot, addDoc, doc, deleteDoc, updateDoc } from "firebase/firestore";
+
+//firebase ref
+
+const notionRef = collection(db, "todos")
 
 //todos
 
 const carts = ref([])
 
+// get todoshca
+onMounted(()=> {
+onSnapshot(notionRef, (querySnapshot) => {
+  const fbNotions = [];
+  querySnapshot.forEach((doc) => {
+    const notion = {
+    id: doc.id,
+    content: doc.data().content,
+    done:doc.data().done
+  };
+  fbNotions.push(notion);
+  });
+  carts.value = fbNotions;
+  console.log("Current cities in CA: ", fbNotions.join(", "));
+});
+})
 //add cart
 
 const newCart = ref('')
 
 const addCart = () => {
-  const newNotion = {
-    id: uuidv4(),
-    content: newCart.value,
-    done: false
-  }
-  carts.value.unshift(newNotion)
+  addDoc(notionRef, {
+  content: newCart.value,
+  done: false
+});
+
   newCart.value = ''
 }
 
 //delete notion
 const deleteNotion = (id)=>{
-carts.value = carts.value.filter(cart => cart.id !== id)
+  deleteDoc(doc(notionRef, id));
 }
 
 //toggle
 const toggleDonchik = (id)=>{
   const index = carts.value.findIndex((cart) => cart.id == id)
-  carts.value[index].done = !carts.value[index].done
+  updateDoc(doc(notionRef, id), {
+  done: !carts.value[index].done
+});
 }
 </script>
 
