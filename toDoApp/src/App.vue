@@ -109,7 +109,7 @@ const toggleDonchik = (id) => {
 </script>
 
 <style>
-@import 'D:\Учим HTML\developer2024\VueJS\Composition Api\node_modules\bulma\css\bulma.min.css';
+@import '..\node_modules\bulma\css\bulma.min.css';
 .wrapper-todo {
   max-width: 500px;
   padding: 20px;
